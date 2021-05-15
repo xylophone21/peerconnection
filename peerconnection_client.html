@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WebRTC Peerconnection Tester</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./app.css">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <div class="container mt-3">
+    
+    <h1>WebRTC Peerconnection Tester</h1>
+    <p>This is a WebRTC peerconnection test page. Use this page to connect to WebRTC peerconnection_server and talk to peerconnection_client.</p>
+
+    <div id="main">
+        <form id="form">
+            <h4>KVS Endpoint</h4>
+            <div class="form-group">
+                <label>Server</label>
+                <input type="text" class="form-control" id="server" value="http://localhost:8888">
+            </div>
+            <div class="form-group">
+                <label>My name</label>
+                <input type="text" class="form-control" id="my_name" value="web_client"/>
+            </div>
+            <div class="form-group">
+                <label>Target name</label>
+                <input type="text" class="form-control" id="you_name"/>
+            </div>
+
+            <button id="connect" type="button" class="btn btn-primary">Connect</button>
+            <button id="disconnect" type="button" class="btn btn-primary">Disconnect</button>
+            <button id="offser" type="button" class="btn btn-primary">Call Peer</button>
+            <button id="clearlog" type="button" class="btn btn-primary">Clear log</button>
+        </form>
+
+        <div class="row">
+            <div class="col">
+                <h5>Local Video</h5>
+                <div class="video-container"><video class="local-view" autoplay playsinline controls muted /></div>
+            </div>
+            <div class="col">
+                <h5>Remote Video</h5>
+                <div class="video-container"><video class="remote-view" autoplay playsinline controls /></div>
+            </div>
+        </div>
+
+        <h3 id="logs-header">Logs</h3>
+        <div class="card bg-light mb-3">
+            <pre id="logs" class="card-body text-monospace preserve-whitespace"></pre>
+        </div>
+
+    </div>
+
+<script src="./app.js"></script>
+
+</body>
+</html>
