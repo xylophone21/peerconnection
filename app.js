@@ -109,6 +109,9 @@ function get_int_header(response, name, def = -1) {
     return val != null && val.length ? parseInt(val) : def;
 }
 
+function handle_peer_message(peer_id, data) {
+}
+
 async function connect() {
     s_server = $('#server').val().toLowerCase();;
     s_my_name = $('#my_name').val().toLowerCase();
@@ -192,6 +195,7 @@ async function pool_message() {
                     }
                     console.log("s_other_peers:",s_other_peers);
                 }else {
+                    handle_peer_message(peer_id,responseText);
                 }
             }
         } catch(err) {
@@ -217,4 +221,9 @@ $('#connect').click(async () => {
 
 $('#disconnect').click(async () => {
     disconnect();
+});
+
+
+$('#clearlog').click(async () => {
+    $('#logs').empty();
 });
