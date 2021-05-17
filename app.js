@@ -2,6 +2,8 @@ var s_server;
 var s_my_name;
 var s_my_id;
 
+var s_your_id = -1;
+
 var s_fetch_controller;
 var s_fetch_signal;
 
@@ -110,6 +112,18 @@ function get_int_header(response, name, def = -1) {
 }
 
 function handle_peer_message(peer_id, data) {
+    if (s_your_id == -1) {
+        s_your_id = peer_id;
+        console.log("Set your_id = " + s_other_peers[peer_id] + "(" + peer_id + ")");
+    }
+
+    // only supports message from one peer yet
+    if (peer_id == s_your_id) {
+        console.log("Got Message from " + s_other_peers[peer_id] + "(" + peer_id + "):" + data);
+
+    } else {
+        console.log("peer_id not match, want " + s_other_peers[s_your_id] + "(" + s_your_id + ") but got " + s_other_peers[peer_id] + "(" + peer_id + ")");
+    }
 }
 
 async function connect() {
@@ -140,6 +154,8 @@ async function connect() {
             }
         }
 
+        s_your_id = -1;
+
         s_fetch_controller = new AbortController();
         s_fetch_signal = s_fetch_controller.signal;
 
@@ -167,6 +183,7 @@ async function disconnect() {
         console.log("disconnect success");
 
         s_my_id = -1;
+        s_your_id = -1;
         $('#connect').removeAttr("disabled");
         $('#disconnect').attr("disabled","disabled")
         $('#offser').attr("disabled","disabled")
@@ -184,8 +201,6 @@ async function pool_message() {
             } else {
                 const peer_id = get_int_header(response,"Pragma");
                 const responseText = await response.text();
-                console.log("Got Message from " + peer_id + ":" + responseText);
-
                 if (peer_id == s_my_id) {
                     var parsed = responseText.split(',');
                     if (parseInt(parsed[2]) != 0) {
@@ -193,7 +208,7 @@ async function pool_message() {
                     } else {
                         delete s_other_peers[parseInt(parsed[1])];  
                     }
-                    console.log("s_other_peers:",s_other_peers);
+                    console.log("Update other peers to:",s_other_peers);
                 }else {
                     handle_peer_message(peer_id,responseText);
                 }
