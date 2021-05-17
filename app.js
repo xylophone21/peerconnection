@@ -1,4 +1,4 @@
-function configureLogging() {
+function configure_logging() {
     function log(level, messages) {
         const text = messages
             .map(message => {
@@ -76,14 +76,27 @@ function load_and_save_files() {
     });
 }
 
-configureLogging();
+function prepare_view() {
+    // disable button
+    $('#disconnect').attr("disabled","disabled")
+    $('#offser').attr("disabled","disabled")
+
+    // random my_name
+    const my_name = $('#my_name').val();
+    const names = my_name.split("@");
+    const new_name = names[0] + "@" + Math.random().toString(36).slice(-8);
+    $('#my_name').val(new_name);
+}
+
+configure_logging();
 load_and_save_files();
+prepare_view();
 
 $('#connect').click(async () => {
     const server = $('#server').val();
-    const your_name = $('#my_name').val();
+    const my_name = $('#my_name').val();
 
-    const response = await fetch(server + "/sign_in?" + your_name);
+    const response = await fetch(server + "/sign_in?" + my_name);
     if (!response.ok) {
         console.error("connect error:" + response.status);
         return;
