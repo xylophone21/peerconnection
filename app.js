@@ -5,6 +5,8 @@ var s_my_id;
 var s_fetch_controller;
 var s_fetch_signal;
 
+var s_other_peers = {};
+
 function configure_logging() {
     function log(level, messages) {
         const text = messages
@@ -102,6 +104,11 @@ function prepare_view() {
     $('#my_name').val(new_name);
 }
 
+function get_int_header(response, name, def = -1) {
+    var val = response.headers.get(name);
+    return val != null && val.length ? parseInt(val) : def;
+}
+
 async function connect() {
     s_server = $('#server').val().toLowerCase();;
     s_my_name = $('#my_name').val().toLowerCase();
@@ -125,6 +132,8 @@ async function connect() {
         for (var i = 1; i < peers.length; ++i) {
             if (peers[i].length > 0) {
                 console.log("Peer " + i + ": " + peers[i]);
+                const parsed = peers[i].split(',');
+                s_other_peers[parseInt(parsed[1])] = parsed[0];
             }
         }
 
@@ -162,7 +171,7 @@ async function disconnect() {
 }
 
 async function pool_message() {
-    console.log("pool_message="+s_my_id);
+    console.log("pool_message of:" + s_my_id);
     if (s_my_id != -1) {
         try {
             const response = await fetch(s_server + "/wait?peer_id=" + s_my_id, {signal : s_fetch_signal});
@@ -170,11 +179,23 @@ async function pool_message() {
                 console.error("pool_message error:" + response.status);
                 await new Promise(resolve => setTimeout(resolve, 1000));
             } else {
+                const peer_id = get_int_header(response,"Pragma");
                 const responseText = await response.text();
-                console.log("pool_message="+responseText);
+                console.log("Got Message from " + peer_id + ":" + responseText);
+
+                if (peer_id == s_my_id) {
+                    var parsed = responseText.split(',');
+                    if (parseInt(parsed[2]) != 0) {
+                        s_other_peers[parseInt(parsed[1])] = parsed[0];
+                    } else {
+                        delete s_other_peers[parseInt(parsed[1])];  
+                    }
+                    console.log("s_other_peers:",s_other_peers);
+                }else {
+                }
             }
         } catch(err) {
-            console.log("pool_message err="+err);
+            console.log("pool_message error:"+err);
             if (err.name === 'AbortError') {
                 return;
             } else {
