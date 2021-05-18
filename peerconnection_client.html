@@ -34,7 +34,13 @@
 
             <div class="form-group">
               <label>Peer Connection Configuration</label>
-              <textarea class="form-control" rows="5" id="configuration">{}</textarea>
+              <textarea class="form-control" rows="5" id="configuration">
+{"iceServers":[
+{"urls":"stun:stun.kinesisvideo.ap-southeast-1.amazonaws.com:443"},
+{"urls":"turn:hellohui.space:3478","username":"lihui02","credential":"passwordlh02"},
+{"urls":"turn:hellohui.space:3478","username":"lihui02","credential":"passwordlh02"}],
+"iceTransportPolicy":"all"}
+              </textarea>
             </div>
 
             <button id="connect" type="button" class="btn btn-primary">Connect</button>
