@@ -195,7 +195,7 @@ async function connect() {
             }
         }
 
-        const config = $('#configuration').val().toLowerCase();
+        const config = $('#configuration').val();
         console.log("config="+config);
 
         const localView = $('#viewer .local-view')[0];
