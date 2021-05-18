@@ -20,7 +20,7 @@ async function start_call(localView, remoteView, configuration, sendMessageCallb
 
     // init webcam
     const constraints = {
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { width: { ideal: 640 }, height: { ideal: 480 }},
         audio: true,
     };
 
@@ -83,9 +83,11 @@ async function on_message(peer_id, data) {
 
                 WebRTCClient.peerConnection.addEventListener('icecandidate', ({ candidate }) => {
                     if (candidate) {
-                        const candidateStr = JSON.stringify(candidate.toJSON());
+                        const candidateStr = JSON.stringify(candidate);
                         console.log("Send candidate to peer(" + peer_id + "):" + candidateStr);
                         WebRTCClient.sendMessageCallback(peer_id, candidateStr);
+                    } else {
+                        console.log("All candidate done!");
                     }
                 });
 
@@ -108,7 +110,7 @@ async function on_message(peer_id, data) {
                 offerToReceiveVideo: true,
             });
 
-            const answerStr = JSON.stringify(answer.toJSON());
+            const answerStr = JSON.stringify(answer);
             console.log('Set SDP answer: ' + answerStr);
             await WebRTCClient.peerConnection.setLocalDescription(answer);
             WebRTCClient.sendMessageCallback(peer_id, answerStr);
