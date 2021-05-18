@@ -2,8 +2,6 @@ var s_server;
 var s_my_name;
 var s_my_id;
 
-var s_your_id = -1;
-
 var s_fetch_controller;
 var s_fetch_signal;
 
@@ -122,19 +120,51 @@ function handle_peer_update(data) {
     console.log("Update other peers to:",s_other_peers);
 }
 
-function handle_peer_message(peer_id, data) {
-    if (s_your_id == -1) {
-        s_your_id = peer_id;
-        console.log("Set your_id = " + s_other_peers[peer_id] + "(" + peer_id + ")");
-    }
+async function handle_peer_message(peer_id, data) {
+    console.log("Got Message from " + s_other_peers[peer_id] + "(" + peer_id + ")");
 
-    // only supports message from one peer yet
-    if (peer_id == s_your_id) {
-        console.log("Got Message from " + s_other_peers[peer_id] + "(" + peer_id + "):" + data);
+    on_message(peer_id, data);
+}
 
-    } else {
-        console.log("peer_id not match, want " + s_other_peers[s_your_id] + "(" + s_your_id + ") but got " + s_other_peers[peer_id] + "(" + peer_id + ")");
+async function pool_message() {
+    console.log("pool_message of:" + s_my_id);
+    if (s_my_id != -1) {
+        try {
+            const response = await fetch(s_server + "/wait?peer_id=" + s_my_id, {signal : s_fetch_signal});
+            if (!response.ok) {
+                console.error("pool_message error:" + response.status);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } else {
+                const peer_id = get_int_header(response,"Pragma");
+                const responseText = await response.text();
+                if (peer_id == s_my_id) {
+                    handle_peer_update(responseText);
+                }else {
+                    handle_peer_message(peer_id,responseText);
+                }
+            }
+        } catch(err) {
+            console.log("pool_message error:"+err);
+            if (err.name === 'AbortError') {
+                return;
+            } else {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        await pool_message();
     }
+}
+
+async function send_message(peer_id, data) {
+    // console.log("send_message to peer " + peer_id + ":" + data);
+    await fetch(s_server + "/message?peer_id=" + s_my_id + "&to=" + peer_id, {
+        body: data,
+        headers: {
+          'content-type': 'text/plain'
+        },
+        method: 'POST',
+    });
 }
 
 async function connect() {
@@ -168,7 +198,10 @@ async function connect() {
         const config = $('#configuration').val().toLowerCase();
         console.log("config="+config);
 
-        s_your_id = -1;
+        const localView = $('#viewer .local-view')[0];
+        const remoteView = $('#viewer .remote-view')[0];
+    
+        start_call(localView, remoteView, config, send_message);
 
         s_fetch_controller = new AbortController();
         s_fetch_signal = s_fetch_controller.signal;
@@ -188,49 +221,21 @@ async function disconnect() {
         s_fetch_controller = null;
         s_fetch_signal = null;
 
-        const response = await fetch(s_server + "/sign_out?peer_id=" + s_my_id);
+        const tmp_id = s_my_id;
+        s_my_id = -1;
+
+        stop_call();
+
+        const response = await fetch(s_server + "/sign_out?peer_id=" + tmp_id);
         if (!response.ok) {
             console.error("disconnect error:" + response.status);
-            return;
+        } else {
+            console.log("disconnect success");
         }
 
-        console.log("disconnect success");
-
-        s_my_id = -1;
-        s_your_id = -1;
         $('#connect').removeAttr("disabled");
         $('#disconnect').attr("disabled","disabled")
         $('#offser').attr("disabled","disabled")
-    }
-}
-
-async function pool_message() {
-    console.log("pool_message of:" + s_my_id);
-    if (s_my_id != -1) {
-        try {
-            const response = await fetch(s_server + "/wait?peer_id=" + s_my_id, {signal : s_fetch_signal});
-            if (!response.ok) {
-                console.error("pool_message error:" + response.status);
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } else {
-                const peer_id = get_int_header(response,"Pragma");
-                const responseText = await response.text();
-                if (peer_id == s_my_id) {
-                    handle_peer_update(responseText);
-                }else {
-                    handle_peer_message(peer_id,responseText);
-                }
-            }
-        } catch(err) {
-            console.log("pool_message error:"+err);
-            if (err.name === 'AbortError') {
-                return;
-            } else {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
-        
-        await pool_message();
     }
 }
 

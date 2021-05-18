@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="./app.css">
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 </head>
 <body>
   <div class="container mt-3">
@@ -33,7 +34,7 @@
 
             <div class="form-group">
               <label>Peer Connection Configuration</label>
-              <textarea class="form-control" rows="5" id="configuration">{""}</textarea>
+              <textarea class="form-control" rows="5" id="configuration">{}</textarea>
             </div>
 
             <button id="connect" type="button" class="btn btn-primary">Connect</button>
@@ -42,7 +43,7 @@
             <button id="clearlog" type="button" class="btn btn-primary">Clear log</button>
         </form>
 
-        <div class="row">
+        <div id="viewer" class="row">
             <div class="col">
                 <h5>Local Video</h5>
                 <div class="video-container"><video class="local-view" autoplay playsinline controls muted /></div>
@@ -60,6 +61,7 @@
 
     </div>
 
+<script src="./webrtc.js"></script>
 <script src="./app.js"></script>
 
 </body>
