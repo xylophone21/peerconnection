@@ -111,6 +111,16 @@ function get_int_header(response, name, def = -1) {
     return val != null && val.length ? parseInt(val) : def;
 }
 
+function handle_peer_update(data) {
+    var parsed = data.split(',');
+    if (parseInt(parsed[2]) != 0) {
+        s_other_peers[parseInt(parsed[1])] = parsed[0];
+    } else {
+        delete s_other_peers[parseInt(parsed[1])];  
+    }
+    console.log("Update other peers to:",s_other_peers);
+}
+
 function handle_peer_message(peer_id, data) {
     if (s_your_id == -1) {
         s_your_id = peer_id;
@@ -202,13 +212,7 @@ async function pool_message() {
                 const peer_id = get_int_header(response,"Pragma");
                 const responseText = await response.text();
                 if (peer_id == s_my_id) {
-                    var parsed = responseText.split(',');
-                    if (parseInt(parsed[2]) != 0) {
-                        s_other_peers[parseInt(parsed[1])] = parsed[0];
-                    } else {
-                        delete s_other_peers[parseInt(parsed[1])];  
-                    }
-                    console.log("Update other peers to:",s_other_peers);
+                    handle_peer_update(responseText);
                 }else {
                     handle_peer_message(peer_id,responseText);
                 }
