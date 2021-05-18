@@ -47,6 +47,7 @@ function load_and_save_files() {
         { field: 'server', type: 'text' },
         { field: 'my_name', type: 'text' },
         { field: 'you_name', type: 'text' },
+        { field: 'configuration', type: 'text' },
     ];
     fields.forEach(({ field, type, name }) => {
         const id = '#' + field;
@@ -137,7 +138,7 @@ function handle_peer_message(peer_id, data) {
 }
 
 async function connect() {
-    s_server = $('#server').val().toLowerCase();;
+    s_server = $('#server').val().toLowerCase();
     s_my_name = $('#my_name').val().toLowerCase();
     if (s_my_name.length == 0) {
         alert("I need a name please.");
@@ -163,6 +164,9 @@ async function connect() {
                 s_other_peers[parseInt(parsed[1])] = parsed[0];
             }
         }
+
+        const config = $('#configuration').val().toLowerCase();
+        console.log("config="+config);
 
         s_your_id = -1;
 
