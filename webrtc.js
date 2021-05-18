@@ -6,6 +6,8 @@ const WebRTCClient = {
     your_id: -1,
     peerConnection: null,
     localStream: null,
+    pendingIceCandidates: [],
+    hasReceivedRemoteSDP: false,
 };
 
 async function start_call(localView, remoteView, configuration, sendMessageCallback) {
@@ -15,6 +17,8 @@ async function start_call(localView, remoteView, configuration, sendMessageCallb
     WebRTCClient.sendMessageCallback = sendMessageCallback;
     WebRTCClient.your_id = -1;
     WebRTCClient.peerConnection = null;
+    WebRTCClient.pendingIceCandidates = [];
+    WebRTCClient.hasReceivedRemoteSDP = false;
 
     console.log('Starting video call');
 
@@ -58,6 +62,8 @@ async function stop_call() {
     WebRTCClient.configuration = null;
     WebRTCClient.sendMessageCallback = null;
     WebRTCClient.your_id = -1;
+    WebRTCClient.pendingIceCandidates = [];
+    WebRTCClient.hasReceivedRemoteSDP = false;
 }
 
 async function on_message(peer_id, data) {
@@ -79,7 +85,9 @@ async function on_message(peer_id, data) {
     try {
         if ("type" in msg && msg.type == "offer") {
             if (WebRTCClient.peerConnection == null) {
-                WebRTCClient.peerConnection = new RTCPeerConnection(WebRTCClient.configuration);
+
+                const tmp_configuration = WebRTCClient.configuration;
+                WebRTCClient.peerConnection = new RTCPeerConnection(tmp_configuration);
 
                 WebRTCClient.peerConnection.addEventListener('icecandidate', ({ candidate }) => {
                     if (candidate) {
@@ -114,11 +122,23 @@ async function on_message(peer_id, data) {
             console.log('Set SDP answer: ' + answerStr);
             await WebRTCClient.peerConnection.setLocalDescription(answer);
             WebRTCClient.sendMessageCallback(peer_id, answerStr);
+            WebRTCClient.hasReceivedRemoteSDP = true;
+
+            WebRTCClient.pendingIceCandidates.forEach(candidateObj => {
+                console.log('Set ICE candidate in cache:' + JSON.stringify(candidateObj));
+                WebRTCClient.peerConnection.addIceCandidate(candidateObj);
+            });
+
         } else if ("type" in msg && msg.type == "answer") {
             console.log("Not imp sdp answer yet");
         }else if("candidate" in msg) {
-            console.log('Set ICE candidate from peer: ' + peer_id);
-            WebRTCClient.peerConnection.addIceCandidate(new RTCIceCandidate(msg));
+            if (WebRTCClient.hasReceivedRemoteSDP) {
+                console.log('Set ICE candidate from peer: ' + peer_id);
+                WebRTCClient.peerConnection.addIceCandidate(new RTCIceCandidate(msg));
+            } else {
+                console.log('Set ICE candidate into cache from peer: ' + peer_id);
+                WebRTCClient.pendingIceCandidates.push(new RTCIceCandidate(msg));
+            }
         }
     } catch (error) {
         console.error("on_message error:" + error);
