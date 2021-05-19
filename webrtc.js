@@ -66,6 +66,54 @@ async function stop_call() {
     WebRTCClient.hasReceivedRemoteSDP = false;
 }
 
+async function call_peer(peer_id) {
+    if (WebRTCClient.your_id == -1) {
+        WebRTCClient.your_id = peer_id;
+        console.log("Set your_id = " + peer_id);
+    }
+
+    // Do not support multi peer_id yet
+    if (peer_id != WebRTCClient.your_id) {
+        console.log("peer_id not match, want " + WebRTCClient.your_id + " but got " + peer_id );
+        return;
+    }
+
+    if (WebRTCClient.peerConnection == null) {
+        const tmp_configuration = WebRTCClient.configuration;
+        WebRTCClient.peerConnection = new RTCPeerConnection(tmp_configuration);
+
+        WebRTCClient.peerConnection.addEventListener('icecandidate', ({ candidate }) => {
+            if (candidate) {
+                const candidateStr = JSON.stringify(candidate);
+                console.log("[call_peer]Send candidate to peer(" + peer_id + "):" + candidateStr);
+                WebRTCClient.sendMessageCallback(peer_id, candidateStr);
+            } else {
+                console.log("[call_peer]All candidate done!");
+            }
+        });
+
+        WebRTCClient.peerConnection.addEventListener('track', event => {
+            console.log('[call_peer]Received remote track from peer: ' + peer_id);
+            WebRTCClient.remoteView.srcObject = event.streams[0];
+        });
+
+        if (WebRTCClient.localStream) {
+            WebRTCClient.localStream.getTracks().forEach(track => WebRTCClient.peerConnection.addTrack(track, WebRTCClient.localStream));
+        }
+    }
+
+    console.log('Creating SDP offer');
+    var offer = await WebRTCClient.peerConnection.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true,
+    });
+    await WebRTCClient.peerConnection.setLocalDescription(offer);
+
+    const offerStr = JSON.stringify(offer);
+    console.log('Set SDP offer: ' + offerStr);
+    WebRTCClient.sendMessageCallback(peer_id, offerStr);
+}
+
 async function on_message(peer_id, data) {
     if (WebRTCClient.your_id == -1) {
         WebRTCClient.your_id = peer_id;
@@ -133,7 +181,8 @@ async function on_message(peer_id, data) {
             });
 
         } else if ("type" in msg && msg.type == "answer") {
-            console.log("Not imp sdp answer yet");
+            console.log('setRemoteDescription answer');
+            await WebRTCClient.peerConnection.setRemoteDescription(msg);
         }else if("candidate" in msg) {
             if (WebRTCClient.hasReceivedRemoteSDP) {
                 console.log('Set ICE candidate from peer: ' + peer_id);

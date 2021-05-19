@@ -26,5 +26,6 @@ Maybe you need a small patch on it.
    ScopedSetTrue s(&waiting_);
 ```
 
-## Notes
+## Konw Issues
  - Local RTCPeerConnection will only generate host icecandidate, it is caused by Linux SDP, changing SDP will fix it, not found the detail yet.
+ - Call Linux from here will only get SDP answer but no icecandidate

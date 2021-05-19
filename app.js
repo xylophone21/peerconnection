@@ -239,6 +239,12 @@ async function disconnect() {
     }
 }
 
+async function call_target() {
+    const you_id = $('#you_id').val().toLowerCase();
+    console.log("call peer id:="+you_id);
+    call_peer(you_id);
+}
+
 configure_logging();
 load_and_save_files();
 prepare_view();
@@ -249,6 +255,10 @@ $('#connect').click(async () => {
 
 $('#disconnect').click(async () => {
     disconnect();
+});
+
+$('#offser').click(async () => {
+    call_target();
 });
 
 

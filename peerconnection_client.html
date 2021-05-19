@@ -28,16 +28,18 @@
                 <input type="text" class="form-control" id="my_name" value="web_client"/>
             </div>
             <div class="form-group">
-                <label>Target name</label>
-                <input type="text" class="form-control" id="you_name"/>
+                <label>Target Id</label>
+                <input type="text" class="form-control" id="you_id"/>
             </div>
 
             <div class="form-group">
               <label>Peer Connection Configuration</label>
               <textarea class="form-control" rows="5" id="configuration">
-{"iceServers":[
-{"urls":"stun:stun.kinesisvideo.ap-southeast-1.amazonaws.com:443"}],
-"iceTransportPolicy":"all"}
+  {"iceServers":[
+  {"urls":"stun:stun.kinesisvideo.ap-southeast-1.amazonaws.com:443"},
+  {"urls":"turn:xxxxxx:xxxx","username":"uuu","credential":"ppp"},
+  {"urls":"turn:xxxxxx:xxxx","username":"uuu","credential":"ppp"}],
+  "iceTransportPolicy":"all"}
               </textarea>
             </div>
 
