@@ -25,3 +25,6 @@ Maybe you need a small patch on it.
    RTC_DCHECK(!waiting_);
    ScopedSetTrue s(&waiting_);
 ```
+
+## Notes
+ - Local RTCPeerConnection will only generate host icecandidate, it is caused by Linux SDP, changing SDP will fix it, not found the detail yet.
